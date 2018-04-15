@@ -1,3 +1,4 @@
 /signalr/obj
 /signalr/bin
 /signalr/node_modules
+/.vs
