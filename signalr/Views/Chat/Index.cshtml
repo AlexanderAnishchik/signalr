@@ -1,0 +1,91 @@
+﻿<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+<link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+<link href="~/StyleSheet.css" rel="stylesheet" />
+<!------ Include the above in your HEAD tag ---------->
+<!DOCTYPE html>
+<html>
+<body>
+    <input type="text" id="user-textbox" placeholder="Nickname" />
+    <label id="user-count" ></label>
+    <div class="col-sm-3 col-sm-offset-4 frame">
+        <ul></ul>
+        <div>
+            <div class="msj-rta macro">
+                <div class="text text-r" style="background:whitesmoke !important">
+                    <input class="mytext" onKeyPress="return checkSubmit(event)" id="message-textbox" placeholder="Type a message" />
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+<script src="/lib/signalr.js"></script>
+<script type="text/javascript">
+    //// Bind DOM elements
+    var messageTextBox = document.getElementById("message-textbox");
+    var userCount = document.getElementById("user-count");
+    var connection = new signalR.HubConnection("/hubs/chat");
+
+
+    connection.on("SendMessage", function (sender, message, count) {
+        userCount.innerHTML ="Users online: "+count;
+        insertChat(sender, message);
+
+    });
+
+    connection.start();
+
+    var me = {};
+    me.avatar = "https://www.fotolia.com/id/116064582";
+
+    var you = {};
+    you.avatar = "https://a11.t26.net/taringa/avatares/9/1/2/F/7/8/Demon_King1/48x48_5C5.jpg";
+
+    function formatAMPM(date) {
+        var hours = date.getHours();
+        var minutes = date.getMinutes();
+        var ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        var strTime = hours + ':' + minutes + ' ' + ampm;
+        return strTime;
+    }
+    function checkSubmit(e) {
+        if (e && e.keyCode == 13) {
+            var message = messageTextBox.value;
+            messageTextBox.value = "";
+            connection.send("Send", { User: document.getElementById("user-textbox").value, MessageText: message });
+        }
+    }
+    //-- No use time. It is a javaScript effect.
+    function insertChat(who, text) {
+        var control = "";
+        var date = formatAMPM(new Date());
+        if (who == document.getElementById("user-textbox").value) {
+            control = '<li style="width:100%">' +
+                '<div class="msj macro">' +
+                '<div class="avatar"><img class="img-circle" style="width:100%;" src="man.png" /></div>' +
+                '<div class="text text-l">' +
+                '<p>' + text + '</p>' +
+                '<p><small>' + who +" | "+ date + '</small></p>' +
+                '</div>' +
+                '</div>' +
+                '</li>';
+        } else {
+            control = '<li style="width:100%;">' +
+                '<div class="msj-rta macro">' +
+                '<div class="text text-r">' +
+                '<p>' + text + '</p>' +
+                '<p><small>' + who + " | " + date + '</small></p>' +
+                '</div>' +
+                '<div class="avatar" style="padding:0px 0px 0px 10px !important"><img class="img-circle" style="width:100%;" src="boy.png" /></div>' +
+                '</li>';
+        }
+        $("ul").append(control).scrollTop($("ul").prop('scrollHeight'));
+
+    }
+</script>
